@@ -31,9 +31,9 @@
     <section class="content">
       <div class="controls">
         <div class="field">
-          <label for="sheets">Folded A5 sheets</label>
-          <div class="inputrow"><input id="sheets" type="number" min="1" max="100" step="1" value="9" inputmode="numeric"><span class="unit">sheets</span></div>
-          <small>9 sheets make a 36-page A6 booklet.</small>
+          <label for="pagesInput">Total booklet pages</label>
+          <div class="inputrow"><input id="pagesInput" type="number" min="4" max="400" step="4" value="36" inputmode="numeric"><span class="unit">pages</span></div>
+          <small>Include the covers. Saddle-stitched booklets need page counts in multiples of 4.</small>
         </div>
         <div class="field">
           <label for="caliper">Thickness of one sheet</label>
@@ -42,9 +42,9 @@
         </div>
       </div>
       <div class="summary" aria-live="polite">
-        <div class="stat"><span>Booklet pages</span><strong id="pages">36</strong></div>
-        <div class="stat"><span>Maximum on innermost sheet</span><strong id="max">4.00 mm</strong></div>
-        <div class="stat"><span>Method</span><strong>constant increment</strong></div>
+        <div class="stat"><span>Folded A5 sheets</span><strong id="sheetCount">9</strong></div>
+        <div class="stat"><span>Center spread at staple fold</span><strong id="centerSpread">18–19</strong></div>
+        <div class="stat"><span>Maximum trim, innermost sheet</span><strong id="max">4.00 mm</strong></div>
       </div>
       <div class="tablewrap">
         <table>
@@ -53,21 +53,24 @@
         </table>
       </div>
       <div class="note"><strong>About paper weight.</strong> 130 gsm describes the paper's weight, not its thickness; paper type and finish affect caliper. Measure a stack of (for example) 10 sheets with a caliper, then divide by 10. Based on your folded-booklet samples, the calculator uses 2 × the measured sheet thickness for each nested-sheet step.</div>
-      <div class="howto"><h2>How to read the result</h2><p>The innermost sheet protrudes the most and gets the largest trim; each sheet after it gets 2 × one sheet-thickness less. The outermost sheet stays at 0 mm. Measure the trim from the open edge opposite the fold/spine. Trim each folded sheet separately before assembling the booklet.</p></div>
+      <div class="howto"><h2>How to read the result</h2><p>The center spread is the pair of pages shown when you open the booklet at its middle fold, where the staples go. For 36 pages, that is pages 18–19. The innermost sheet protrudes the most and gets the largest trim; each sheet after it gets 2 × one sheet-thickness less. The outermost sheet stays at 0 mm. Measure from the open edge opposite the fold/spine. Trim each folded sheet separately before assembling the booklet.</p></div>
     </section>
     <div class="footer">Geometric estimate for sheets of uniform thickness. Folding and compression may slightly change the result; test with a sample booklet before printing the full run.</div>
   </article>
 </main>
 <script>
-  const sheetsInput = document.getElementById('sheets');
+  const pagesInput = document.getElementById('pagesInput');
   const caliperInput = document.getElementById('caliper');
   const rows = document.getElementById('rows');
   const fmt = n => new Intl.NumberFormat('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
-  function update(){
-    const count = Math.max(1, Math.min(100, Math.round(Number(sheetsInput.value)||1)));
-    const caliper = Math.max(0.01, Math.min(2, Number(caliperInput.value)||0.15));
-    sheetsInput.value = count;
-    document.getElementById('pages').textContent = count * 4;
+  function update(normalize=false){
+    const rawPages = Math.max(4, Math.min(400, Number(pagesInput.value)||36));
+    const count = Math.max(1, Math.min(100, Math.round(rawPages/4)));
+    const pages = count * 4;
+    const caliper = Math.max(0.01, Math.min(2, Number(caliperInput.value)||0.25));
+    if(normalize) pagesInput.value = pages;
+    document.getElementById('sheetCount').textContent = count;
+    document.getElementById('centerSpread').textContent = `${pages/2}–${pages/2+1}`;
     document.getElementById('max').textContent = `${fmt((count-1)*caliper*2)} mm`;
     rows.replaceChildren();
     for(let i=0;i<count;i++){
@@ -80,7 +83,10 @@
       tr.append(order,value); rows.append(tr);
     }
   }
-  sheetsInput.addEventListener('input',update); caliperInput.addEventListener('input',update); update();
+  pagesInput.addEventListener('input',()=>update(false));
+  pagesInput.addEventListener('change',()=>update(true));
+  caliperInput.addEventListener('input',()=>update(false));
+  update(true);
 </script>
 </body>
 </html>
