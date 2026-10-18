@@ -37,13 +37,13 @@
         </div>
         <div class="field">
           <label for="caliper">Thickness of one sheet</label>
-          <div class="inputrow"><input id="caliper" type="number" min="0.01" max="2" step="0.01" value="0.15" inputmode="decimal"><span class="unit">mm</span></div>
-          <small>Starting estimate for 130 gsm paper: measure it for a more accurate result.</small>
+          <div class="inputrow"><input id="caliper" type="number" min="0.01" max="2" step="0.01" value="0.25" inputmode="decimal"><span class="unit">mm</span></div>
+          <small>Measure your actual paper. Your samples indicate about 0.25 mm per sheet.</small>
         </div>
       </div>
       <div class="summary" aria-live="polite">
         <div class="stat"><span>Booklet pages</span><strong id="pages">36</strong></div>
-        <div class="stat"><span>Maximum on innermost sheet</span><strong id="max">1.20 mm</strong></div>
+        <div class="stat"><span>Maximum on innermost sheet</span><strong id="max">4.00 mm</strong></div>
         <div class="stat"><span>Method</span><strong>constant increment</strong></div>
       </div>
       <div class="tablewrap">
@@ -52,8 +52,8 @@
           <tbody id="rows"></tbody>
         </table>
       </div>
-      <div class="note"><strong>About paper weight.</strong> 130 gsm describes the paper's weight, not its thickness; paper type and finish affect caliper. The 0.15 mm value is only a starting estimate. To measure it, stack (for example) 10 sheets, measure the total thickness with a caliper, then divide by 10.</div>
-      <div class="howto"><h2>How to read the result</h2><p>The innermost sheet protrudes the most and gets the largest trim; each sheet after it gets one sheet-thickness less. The outermost sheet stays at 0 mm. Measure the trim from the open edge opposite the fold/spine. Trim each folded sheet separately before assembling the booklet.</p></div>
+      <div class="note"><strong>About paper weight.</strong> 130 gsm describes the paper's weight, not its thickness; paper type and finish affect caliper. Measure a stack of (for example) 10 sheets with a caliper, then divide by 10. Based on your folded-booklet samples, the calculator uses 2 × the measured sheet thickness for each nested-sheet step.</div>
+      <div class="howto"><h2>How to read the result</h2><p>The innermost sheet protrudes the most and gets the largest trim; each sheet after it gets 2 × one sheet-thickness less. The outermost sheet stays at 0 mm. Measure the trim from the open edge opposite the fold/spine. Trim each folded sheet separately before assembling the booklet.</p></div>
     </section>
     <div class="footer">Geometric estimate for sheets of uniform thickness. Folding and compression may slightly change the result; test with a sample booklet before printing the full run.</div>
   </article>
@@ -68,10 +68,10 @@
     const caliper = Math.max(0.01, Math.min(2, Number(caliperInput.value)||0.15));
     sheetsInput.value = count;
     document.getElementById('pages').textContent = count * 4;
-    document.getElementById('max').textContent = `${fmt((count-1)*caliper)} mm`;
+    document.getElementById('max').textContent = `${fmt((count-1)*caliper*2)} mm`;
     rows.replaceChildren();
     for(let i=0;i<count;i++){
-      const amount = (count-1-i)*caliper;
+      const amount = (count-1-i)*caliper*2;
       const tr=document.createElement('tr');
       const order=document.createElement('td');
       const value=document.createElement('td');
