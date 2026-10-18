@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f1e9">
+  <title>Larry — A6 Booklet Trim Calculator</title>
+  <style>
+    :root{--ink:#1e2b27;--muted:#67736e;--paper:#fbfaf7;--bg:#f2eee6;--line:#e4dfd4;--green:#246b55;--mint:#e6f1eb;--orange:#f1a758;--shadow:0 18px 55px #27362d12}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    main{max-width:960px;margin:34px auto;padding:0 20px 40px}.card{background:var(--paper);border:1px solid #eae5db;border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+    header{padding:30px 34px 26px;background:linear-gradient(130deg,#e9f2ec 0%,#f7f3ea 72%);border-bottom:1px solid var(--line)}
+    .eyebrow{text-transform:uppercase;letter-spacing:.13em;font-size:12px;font-weight:750;color:var(--green)}h1{font-size:clamp(26px,4vw,38px);line-height:1.1;margin:8px 0 10px;letter-spacing:-.035em}header p{color:#4d5b55;max-width:700px;margin:0}
+    .content{padding:28px 34px 34px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:18px}.field{padding:16px 17px;border:1px solid var(--line);border-radius:14px;background:#fff}.field label{display:block;font-weight:700;font-size:14px;margin-bottom:8px}.field small{display:block;color:var(--muted);margin-top:7px;font-size:12px}
+    .inputrow{display:flex;align-items:center;gap:10px}.inputrow input{width:100%;min-width:0;border:1px solid #d8ddd7;border-radius:9px;padding:11px 12px;font:inherit;font-size:18px;font-weight:700;color:var(--ink);background:#fff}.unit{font-weight:700;color:var(--muted);white-space:nowrap}
+    .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}.stat{border-radius:13px;background:#f3f5f1;padding:14px 16px}.stat span{display:block;color:var(--muted);font-size:12px;font-weight:650}.stat strong{display:block;font-size:22px;letter-spacing:-.02em;margin-top:2px}
+    .tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:480px}th,td{text-align:left;padding:12px 16px;border-bottom:1px solid #eeeae2}th{background:#f5f4ef;color:#59665f;font-size:12px;text-transform:uppercase;letter-spacing:.06em}tbody tr:last-child td{border-bottom:0}td:last-child,th:last-child{text-align:right}td strong{font-variant-numeric:tabular-nums}.inner{color:#a15b19;font-weight:700}.outer{color:var(--green);font-weight:700}
+    .note{margin-top:18px;padding:15px 17px;border-left:4px solid var(--orange);background:#fff7eb;border-radius:0 11px 11px 0;color:#5f503c;font-size:14px}.note strong{color:#3e3529}.howto{margin-top:20px;padding:17px 18px;background:var(--mint);border-radius:14px}.howto h2{font-size:15px;margin:0 0 5px}.howto p{margin:0;color:#465951;font-size:14px}.footer{padding:0 34px 28px;color:var(--muted);font-size:12px}
+    @media(max-width:650px){main{margin:14px auto;padding:0 10px 24px}.card{border-radius:17px}header,.content{padding:23px 20px}.controls{grid-template-columns:1fr}.summary{grid-template-columns:1fr}.stat{display:flex;justify-content:space-between;align-items:center}.stat strong{margin:0}.footer{padding:0 20px 22px}}
+    @media print{body{background:#fff}main{margin:0;max-width:none;padding:0}.card{box-shadow:none;border:0}header{padding:12px 0;background:#fff}.content{padding:16px 0}.controls,.howto,.footer{display:none}.summary{margin:12px 0}.note{break-inside:avoid}}
+  </style>
+</head>
+<body>
+<main>
+  <article class="card">
+    <header>
+      <div class="eyebrow">Larry · print and binding</div>
+      <h1>How much to trim from your A6 booklet</h1>
+      <p>Calculate the fore-edge compensation for folded A5 sheets nested inside one another.</p>
+    </header>
+    <section class="content">
+      <div class="controls">
+        <div class="field">
+          <label for="sheets">Folded A5 sheets</label>
+          <div class="inputrow"><input id="sheets" type="number" min="1" max="100" step="1" value="9" inputmode="numeric"><span class="unit">sheets</span></div>
+          <small>9 sheets make a 36-page A6 booklet.</small>
+        </div>
+        <div class="field">
+          <label for="caliper">Thickness of one sheet</label>
+          <div class="inputrow"><input id="caliper" type="number" min="0.01" max="2" step="0.01" value="0.15" inputmode="decimal"><span class="unit">mm</span></div>
+          <small>Starting estimate for 130 gsm paper: measure it for a more accurate result.</small>
+        </div>
+      </div>
+      <div class="summary" aria-live="polite">
+        <div class="stat"><span>Booklet pages</span><strong id="pages">36</strong></div>
+        <div class="stat"><span>Maximum on innermost sheet</span><strong id="max">1.20 mm</strong></div>
+        <div class="stat"><span>Method</span><strong>constant increment</strong></div>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Order, from the inside</th><th>Trim at the fore-edge</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="note"><strong>About paper weight.</strong> 130 gsm describes the paper's weight, not its thickness; paper type and finish affect caliper. The 0.15 mm value is only a starting estimate. To measure it, stack (for example) 10 sheets, measure the total thickness with a caliper, then divide by 10.</div>
+      <div class="howto"><h2>How to read the result</h2><p>The innermost sheet protrudes the most and gets the largest trim; each sheet after it gets one sheet-thickness less. The outermost sheet stays at 0 mm. Measure the trim from the open edge opposite the fold/spine. Trim each folded sheet separately before assembling the booklet.</p></div>
+    </section>
+    <div class="footer">Geometric estimate for sheets of uniform thickness. Folding and compression may slightly change the result; test with a sample booklet before printing the full run.</div>
+  </article>
+</main>
+<script>
+  const sheetsInput = document.getElementById('sheets');
+  const caliperInput = document.getElementById('caliper');
+  const rows = document.getElementById('rows');
+  const fmt = n => new Intl.NumberFormat('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+  function update(){
+    const count = Math.max(1, Math.min(100, Math.round(Number(sheetsInput.value)||1)));
+    const caliper = Math.max(0.01, Math.min(2, Number(caliperInput.value)||0.15));
+    sheetsInput.value = count;
+    document.getElementById('pages').textContent = count * 4;
+    document.getElementById('max').textContent = `${fmt((count-1)*caliper)} mm`;
+    rows.replaceChildren();
+    for(let i=0;i<count;i++){
+      const amount = (count-1-i)*caliper;
+      const tr=document.createElement('tr');
+      const order=document.createElement('td');
+      const value=document.createElement('td');
+      order.innerHTML = `<span class="${i===0?'inner':i===count-1?'outer':''}">${i===0?'1 · innermost':i===count-1?`${count} · outermost`:`${i+1} · middle`}</span>`;
+      value.innerHTML = `<strong>${fmt(amount)} mm</strong>`;
+      tr.append(order,value); rows.append(tr);
+    }
+  }
+  sheetsInput.addEventListener('input',update); caliperInput.addEventListener('input',update); update();
+</script>
+</body>
+</html>
